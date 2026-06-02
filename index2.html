@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>黎子謙 — Terminal</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --green: #3fb950;
+    --green-dim: #238636;
+    --cyan: #58a6ff;
+    --orange: #d2991d;
+    --red: #f85149;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --text-muted: #484f58;
+    --font: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Noto Sans Mono', 'Courier New', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    line-height: 1.7;
+    font-size: 14px;
+    overflow-x: hidden;
+  }
+
+  /* Scanlines */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    opacity: 0.5;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+
+  /* ── Header ── */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1rem 2rem;
+    background: rgba(13,17,23,0.92);
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    backdrop-filter: blur(8px);
+  }
+  header .prompt { color: var(--green); font-size: 0.8rem; }
+  header .prompt::before { content: '> '; color: var(--text-muted); }
+  header nav { display: flex; gap: 1.5rem; }
+  header nav a {
+    color: var(--text-dim); text-decoration: none; font-size: 0.75rem;
+    transition: color 0.2s;
+  }
+  header nav a::before { content: './'; color: var(--text-muted); }
+  header nav a:hover { color: var(--green); }
+
+  /* ── Sections ── */
+  section { padding: 5rem 0; }
+  .section-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem; margin-bottom: 2rem;
+  }
+  .section-header .hash { color: var(--text-muted); }
+  .section-header .title { color: var(--cyan); font-weight: 700; font-size: 1.1rem; }
+
+  /* ── HERO ── */
+  .hero { min-height: 100vh; display: flex; align-items: center; }
+  .hero-content { width: 100%; }
+  .ascii-name {
+    font-size: clamp(1.5rem, 5vw, 3.5rem);
+    font-weight: 900; color: var(--green); line-height: 1.2;
+    white-space: pre; overflow-x: auto;
+    margin-bottom: 1rem;
+  }
+  .hero-name { font-size: 2.5rem; font-weight: 900; color: #fff; margin-bottom: 0.3rem; }
+  .hero-sub { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .hero-tagline {
+    color: var(--text);
+    font-size: 0.95rem;
+    border-left: 2px solid var(--green);
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+  .hero-tagline .comment { color: var(--text-muted); font-style: italic; }
+  .hero-meta {
+    display: flex; gap: 2rem; flex-wrap: wrap; margin-top: 2rem;
+  }
+  .hero-meta-item { color: var(--text-dim); font-size: 0.78rem; }
+  .hero-meta-item .key { color: var(--cyan); }
+  .hero-meta-item .val { color: var(--text); }
+
+  /* ── Photo framed ── */
+  .photo-frame {
+    margin-top: 2rem;
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    display: inline-block;
+    background: var(--surface);
+  }
+  .photo-frame img {
+    width: min(280px, 60vw);
+    display: block;
+    filter: grayscale(60%) contrast(1.1);
+    border: 1px solid var(--border);
+  }
+  .photo-frame .caption {
+    font-size: 0.65rem; color: var(--text-muted);
+    margin-top: 0.4rem; text-align: center;
+  }
+  .photo-frame .caption::before { content: '// '; }
+
+  /* File tree */
+  .file-tree {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 1.5rem; margin-top: 2rem;
+  }
+  .file-tree .ft-item { font-size: 0.8rem; line-height: 1.8; }
+  .file-tree .ft-dir { color: var(--cyan); }
+  .file-tree .ft-file { color: var(--text-dim); }
+  .file-tree .ft-comment { color: var(--text-muted); font-style: italic; }
+
+  /* ── Command blocks ── */
+  .cmd-block {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 1.2rem 1.5rem; margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .cmd-block .line { font-size: 0.82rem; line-height: 1.8; }
+  .cmd-block .line .p { color: var(--green); }
+  .cmd-block .line .c { color: var(--text-muted); font-style: italic; }
+  .cmd-block .line .o { color: var(--orange); }
+  .cmd-block .line .s { color: var(--cyan); }
+
+  /* ── Timeline as log ── */
+  .log-entry {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1rem;
+    font-size: 0.82rem;
+  }
+  .log-entry .log-date { color: var(--text-muted); font-size: 0.72rem; }
+  .log-entry .log-msg { color: var(--text); }
+  .log-entry .log-msg .highlight { color: var(--cyan); }
+  .log-entry:first-child .log-msg::after {
+    content: ' ⬤'; color: var(--green); animation: blink 1s step-end infinite; font-size: 0.5rem; vertical-align: middle;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── Project card ── */
+  .proj-card {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 1.8rem; position: relative;
+  }
+  .proj-card::before {
+    content: 'repo: 7db0263a-code/six-joint-bot';
+    display: block; font-size: 0.65rem; color: var(--text-muted);
+    margin-bottom: 0.8rem;
+  }
+  .proj-card h3 { color: var(--cyan); font-size: 1.2rem; margin-bottom: 0.6rem; }
+  .proj-card p { color: var(--text-dim); font-size: 0.85rem; line-height: 1.6; }
+  .dep-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+  .dep-tag {
+    font-size: 0.65rem; color: var(--green);
+    border: 1px solid var(--green-dim); padding: 0.2em 0.6em;
+  }
+
+  /* ── Awards ── */
+  .award-feat {
+    background: var(--surface); border: 1px solid var(--orange);
+    padding: 1.5rem; margin-bottom: 1rem;
+  }
+  .award-feat .award-lvl { color: var(--orange); font-size: 0.9rem; font-weight: 700; }
+  .award-feat .award-title { color: #fff; font-size: 1rem; margin-top: 0.3rem; }
+  .award-feat .award-year { color: var(--text-muted); font-size: 0.72rem; margin-top: 0.5rem; }
+  .award-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+  .award-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.6rem 0.8rem; border: 1px solid var(--border);
+    font-size: 0.75rem;
+  }
+  .award-row .aw-name { color: var(--text); }
+  .award-row .aw-grade { color: var(--orange); font-weight: 700; font-size: 0.68rem; }
+  .award-row .aw-year { color: var(--text-muted); font-size: 0.65rem; }
+
+  /* ── Photography ── */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .photo-cell {
+    aspect-ratio: 1;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    background: var(--surface);
+  }
+  .photo-cell img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    filter: grayscale(80%);
+    transition: filter 0.3s, transform 0.5s;
+    image-rendering: pixelated;
+  }
+  .photo-cell:hover img {
+    filter: grayscale(0%);
+    transform: scale(1.06);
+    image-rendering: auto;
+  }
+  .photo-cell::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none; opacity: 0; transition: opacity 0.3s;
+  }
+
+  /* ── Contact ── */
+  .contact-block { font-size: 0.82rem; line-height: 2; }
+  .contact-block .key { color: var(--text-muted); }
+  .contact-block .val { color: var(--cyan); }
+  .contact-block a { color: var(--cyan); text-decoration: none; }
+  .contact-block a:hover { text-decoration: underline; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center; padding: 3rem 2rem;
+    border-top: 1px solid var(--border);
+  }
+  footer .exit-code { font-size: 2rem; color: var(--green); font-weight: 700; }
+  footer .exit-msg { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+  /* ── Reveal ── */
+  .reveal { opacity: 0; transform: translateY(10px); transition: 0.5s ease-out; }
+  .reveal.on { opacity: 1; transform: translateY(0); }
+
+  /* ── Lightbox ── */
+  .lb { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.94); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; cursor: pointer; }
+  .lb.on { opacity: 1; pointer-events: auto; }
+  .lb img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+  .lb .x { position: absolute; top: 1.5rem; right: 1.5rem; color: var(--green); font-size: 2rem; cursor: pointer; font-family: monospace; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+
+  @media (max-width: 768px) {
+    header nav { gap: 0.6rem; }
+    header nav a { font-size: 0.65rem; }
+    .log-entry { grid-template-columns: 80px 1fr; }
+    .award-list { grid-template-columns: 1fr; }
+    .hero-meta { gap: 1rem; }
+  }
+
+  /* Cursor blink */
+  .cursor::after {
+    content: '█'; color: var(--green);
+    animation: blink 1s step-end infinite;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="prompt cursor">whoami</div>
+  <nav>
+    <a href="#about">about</a>
+    <a href="#project">project</a>
+    <a href="#awards">awards</a>
+    <a href="#photo">photos</a>
+    <a href="#contact">contact</a>
+  </nav>
+</header>
+
+<!-- ════════ HERO ════════ -->
+<section class="hero" id="top">
+  <div class="container hero-content">
+    <div class="hero-name">黎子謙</div>
+    <div class="hero-sub">$ ssh laichihim@personal-site — LAI CHI HIM</div>
+    <div class="hero-tagline">
+      <span class="comment">/* 一个小小星球上的在读学生</span><br>
+      <span class="comment"> * AI时代下的新青年</span><br>
+      <span class="comment"> * 行动小矮子 & 思想的胖子</span><br>
+      <span class="comment"> */</span>
+    </div>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><span class="key">status:</span> <span class="val">HUST · Automation · Freshman</span></div>
+      <div class="hero-meta-item"><span class="key">lang:</span> <span class="val">yue, cmn, en, jp</span></div>
+      <div class="hero-meta-item"><span class="key">code:</span> <span class="val">python, c, cpp</span></div>
+    </div>
+    <div class="photo-frame">
+      <img src="photo/myself/p1.jpg" alt="黎子謙">
+      <div class="caption">profile.jpg — 华中科技大学</div>
+    </div>
+    <div class="file-tree">
+      <div class="ft-item"><span class="ft-dir">~/lai-chi-him/</span></div>
+      <div class="ft-item">├── <span class="ft-dir">education/</span> <span class="ft-comment"># 华中科技大学 · 自动化</span></div>
+      <div class="ft-item">├── <span class="ft-dir">projects/</span> <span class="ft-comment"># six-joint-bot</span></div>
+      <div class="ft-item">├── <span class="ft-dir">awards/</span> <span class="ft-comment"># 20+ achievements</span></div>
+      <div class="ft-item">├── <span class="ft-dir">photography/</span> <span class="ft-comment"># 15 shots</span></div>
+      <div class="ft-item">├── <span class="ft-file">catchphrase.txt</span> <span class="ft-comment"># "想下先"</span></div>
+      <div class="ft-item">└── <span class="ft-file">README.md</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ ABOUT ════════ -->
+<section id="about">
+  <div class="container">
+    <div class="section-header">
+      <span class="hash">##</span> <span class="title">/about</span>
+    </div>
+    <div class="cmd-block reveal">
+      <div class="line"><span class="p">$</span> cat about.md</div>
+      <div class="line" style="margin-top:0.5rem;"><span class="c"># 黎子謙 · LAI CHI HIM</span></div>
+      <div class="line"></div>
+      <div class="line">目前就读于<span class="s">华中科技大学</span>，自动化专业大一学生。</div>
+      <div class="line">一名初级的 <span class="o">vibe coder</span>——相信代码可以改变世界，哪怕只是一点点。</div>
+      <div class="line"></div>
+      <div class="line">加入 <span class="s">HRT 团队</span>，大一生涯的第一个寒假，</div>
+      <div class="line">与队友共同完成基于 <span class="o">MoveIt</span> 的六轴机械手臂抓取项目。</div>
+      <div class="line">代码变成了物理世界中的精准运动。</div>
+      <div class="line"></div>
+      <div class="line">来自<span class="s">澳门</span>，在多元文化的碰撞中长大。</div>
+      <div class="line">粤语是我的母语，普通话、英语、日语是我与世界对话的桥梁。</div>
+    </div>
+
+    <div class="cmd-block reveal" style="margin-top:1rem;">
+      <div class="line"><span class="p">$</span> cat ~/.catchphrase</div>
+      <div class="line" style="margin-top:0.5rem; font-size:1.3rem; color:var(--orange); font-weight:700;">「想下先」</div>
+      <div class="line"><span class="c">// 三思而后行，行动之前先让思想飞一会儿</span></div>
+    </div>
+
+    <div class="cmd-block reveal" style="margin-top:1rem;">
+      <div class="line"><span class="p">$</span> ls languages/</div>
+      <div class="line" style="margin-top:0.5rem;">
+        <span class="s">cantonese</span> (native) ·
+        <span class="s">mandarin</span> (fluent) ·
+        <span class="s">english</span> (fluent) ·
+        <span class="s">japanese</span> (learning)
+      </div>
+      <div class="line" style="margin-top:0.5rem;">
+        <span class="o">python</span> ·
+        <span class="o">c</span> ·
+        <span class="o">c++</span>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top:1.5rem;">
+      <div class="photo-frame">
+        <img src="photo/myself/p2.jpg" alt="Fitness">
+        <div class="caption">fitness.jpg</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ EDUCATION ════════ -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="hash">##</span> <span class="title">/education.log</span>
+    </div>
+    <div class="reveal">
+      <div class="log-entry"><span class="log-date">2025-09 — now</span><span class="log-msg"><span class="highlight">华中科技大学</span> · 自动化专业 · 大一 🟢 ACTIVE</span></div>
+      <div class="log-entry"><span class="log-date">2022 — 2025</span><span class="log-msg">澳門浸信中學 · 高中 (Senior Secondary)</span></div>
+      <div class="log-entry"><span class="log-date">2019 — 2022</span><span class="log-msg">澳門浸信中學 · 初中 (Junior Secondary)</span></div>
+      <div class="log-entry"><span class="log-date">2013 — 2019</span><span class="log-msg">澳門浸信中學 · 小學 (Primary)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ PROJECT ════════ -->
+<section id="project">
+  <div class="container">
+    <div class="section-header">
+      <span class="hash">##</span> <span class="title">/project</span>
+    </div>
+    <div class="proj-card reveal">
+      <h3>Six-Joint-Bot</h3>
+      <p>6-DOF robotic arm powered by ROS 2 & MoveIt 2, with custom serial servo hardware interface. From simulation to physical grasping — built with HRT teammates during freshman winter break.</p>
+      <div class="dep-tags">
+        <span class="dep-tag">ros2</span>
+        <span class="dep-tag">moveit2</span>
+        <span class="dep-tag">python</span>
+        <span class="dep-tag">c++</span>
+        <span class="dep-tag">6-dof</span>
+        <span class="dep-tag">serial-servo</span>
+      </div>
+      <p style="margin-top:1rem;"><a href="https://github.com/7db0263a-code/six-joint-bot" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;">$ git clone https://github.com/7db0263a-code/six-joint-bot</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ AWARDS ════════ -->
+<section id="awards">
+  <div class="container">
+    <div class="section-header">
+      <span class="hash">##</span> <span class="title">/awards —grep "prize"</span>
+    </div>
+    <div class="award-feat reveal">
+      <div class="award-lvl">[ SECOND PRIZE ]</div>
+      <div class="award-title">ICC全球發明大會中國區全國總決賽</div>
+      <div class="award-year">2024</div>
+    </div>
+    <div class="reveal" style="margin-bottom:1rem;">
+      <div class="photo-frame">
+        <img src="photo/myself/p3.jpg" alt="ICC Award">
+        <div class="caption">icc_award.jpg</div>
+      </div>
+    </div>
+    <div class="award-list reveal">
+      <div class="award-row"><span class="aw-name">上海國際發明創新展覽會</span><span class="aw-year">2022</span><span class="aw-grade">金獎</span></div>
+      <div class="award-row"><span class="aw-name">海峽兩岸青少年數學邀請賽(港澳)</span><span class="aw-year">2024</span><span class="aw-grade">一等獎</span></div>
+      <div class="award-row"><span class="aw-name">粵港澳大灣區數學競賽選拔賽</span><span class="aw-year">2024</span><span class="aw-grade">一等獎</span></div>
+      <div class="award-row"><span class="aw-name">澳門金蓮花杯國際數學邀請賽</span><span class="aw-year">2023</span><span class="aw-grade">銀獎</span></div>
+      <div class="award-row"><span class="aw-name">大灣區青少年資訊學創新大賽</span><span class="aw-year">2023</span><span class="aw-grade">二等獎</span></div>
+      <div class="award-row"><span class="aw-name">港澳數學奧林匹克公開賽</span><span class="aw-year">2024</span><span class="aw-grade">銅獎</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ PHOTOGRAPHY ════════ -->
+<section id="photo">
+  <div class="container">
+    <div class="section-header">
+      <span class="hash">##</span> <span class="title">/photos —sort-by date</span>
+    </div>
+    <div class="photo-grid reveal" id="gallery2"></div>
+  </div>
+</section>
+
+<!-- ════════ CONTACT ════════ -->
+<section id="contact">
+  <div class="container">
+    <div class="section-header">
+      <span class="hash">##</span> <span class="title">/contact</span>
+    </div>
+    <div class="cmd-block reveal">
+      <div class="line"><span class="p">$</span> cat contact.json</div>
+      <div class="line" style="margin-top:0.5rem;">{</div>
+      <div class="line">  <span class="key">"email"</span>: <span class="val">"7db0263a@gmail.com"</span>,</div>
+      <div class="line">  <span class="key">"qq"</span>: <span class="val">"3572255042@qq.com"</span>,</div>
+      <div class="line">  <span class="key">"github"</span>: <span class="val">"<a href="https://github.com/7db0263a-code" target="_blank">7db0263a-code</a>"</span>,</div>
+      <div class="line">  <span class="key">"location"</span>: <span class="val">"Macau / Wuhan"</span></div>
+      <div class="line">}</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="exit-code">exit 0</div>
+  <div class="exit-msg">Process completed — 「想下先。」</div>
+  <div class="exit-msg">© 2026 黎子謙 LAI CHI HIM</div>
+</footer>
+
+<div class="lb" id="lb2"><div class="x">x</div><img src="" id="lbImg2"></div>
+
+<script>
+const ob = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('on'); }), {threshold:0.15});
+document.querySelectorAll('.reveal').forEach(el => ob.observe(el));
+
+const files = [
+  '微信图片_20260601231553_146_2.jpg','微信图片_20260601231556_147_2.jpg','微信图片_20260601231601_149_2.jpg',
+  '微信图片_20260601231603_150_2.jpg','微信图片_20260601231607_152_2.jpg','微信图片_20260601231609_153_2.jpg',
+  '微信图片_20260601231612_154_2.jpg','微信图片_20260601231613_155_2.jpg','微信图片_20260601231615_156_2.jpg',
+  '微信图片_20260601231616_157_2.jpg','微信图片_20260601231620_158_2.jpg','微信图片_20260601231624_159_2.jpg',
+  '微信图片_20260601231628_160_2.jpg','微信图片_20260601231630_161_2.jpg','微信图片_20260601231644_164_2.jpg'
+];
+const g = document.getElementById('gallery2');
+files.forEach(f => {
+  const d = document.createElement('div'); d.className = 'photo-cell';
+  d.innerHTML = `<img src="photo/shot/${f}" alt="Photo" loading="lazy">`;
+  d.onclick = () => { document.getElementById('lbImg2').src = `photo/shot/${f}`; document.getElementById('lb2').classList.add('on'); document.body.style.overflow='hidden'; };
+  g.appendChild(d);
+});
+const lb = document.getElementById('lb2');
+lb.onclick = e => { if(e.target===lb||e.target.classList.contains('x')){ lb.classList.remove('on'); document.body.style.overflow=''; } };
+document.onkeydown = e => { if(e.key==='Escape'){ lb.classList.remove('on'); document.body.style.overflow=''; } };
+
+document.querySelectorAll('a[href^="#"]').forEach(a => a.onclick = e => {
+  e.preventDefault(); const t = document.querySelector(a.getAttribute('href'));
+  if(t) t.scrollIntoView({behavior:'smooth'});
+});
+</script>
+</body>
+</html>

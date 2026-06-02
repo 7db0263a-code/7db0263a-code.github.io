@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>黎子謙 — Zen</title>
+<style>
+  :root {
+    --paper: #fafaf8;
+    --ink: #1a1a18;
+    --ink-dim: #6b6b65;
+    --ink-muted: #b0b0a8;
+    --accent: #c42d2d;
+    --accent-dim: #fdf0f0;
+    --border: #e8e8e2;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Noto Serif SC', 'Songti SC', '华文宋体', 'Georgia', serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 800px; margin: 0 auto; padding: 0 2rem; }
+
+  /* ── Header ── */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1.5rem 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(250,250,248,0.8);
+    backdrop-filter: blur(12px);
+  }
+  header .logo {
+    font-size: 0.75rem; letter-spacing: 0.2em; color: var(--ink-dim);
+    font-weight: 700;
+  }
+  header nav { display: flex; gap: 1.8rem; }
+  header nav a {
+    color: var(--ink-dim); text-decoration: none; font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    transition: color 0.25s;
+  }
+  header nav a:hover { color: var(--accent); }
+
+  /* ── Sections ── */
+  section { padding: 5rem 0; }
+  .section-num {
+    font-size: 0.65rem; letter-spacing: 0.2em; color: var(--ink-muted);
+    margin-bottom: 0.5rem; text-transform: uppercase;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 700; color: var(--ink);
+    margin-bottom: 3rem; letter-spacing: 0.02em;
+  }
+
+  /* ── Zen divider ── */
+  .zen-divider {
+    text-align: center; padding: 1.5rem 0; color: var(--ink-muted);
+    font-size: 0.6rem; letter-spacing: 0.3em; opacity: 0.5;
+  }
+
+  /* ── HERO ── */
+  .hero { min-height: 100vh; display: flex; align-items: center; padding-top: 5rem; }
+  .hero-inner { text-align: center; width: 100%; }
+  .hero-name {
+    font-size: clamp(3rem, 8vw, 6rem); font-weight: 900; line-height: 1.1;
+    letter-spacing: 0.04em; color: var(--ink);
+  }
+  .hero-en {
+    font-size: 0.85rem; letter-spacing: 0.4em; color: var(--ink-muted);
+    margin: 0.8rem 0 2rem; text-transform: uppercase;
+  }
+  .hero-photo-circle {
+    width: min(220px, 50vw); aspect-ratio: 1;
+    margin: 0 auto 2rem;
+    border-radius: 50%; overflow: hidden;
+    position: relative;
+  }
+  .hero-photo-circle img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    filter: grayscale(25%);
+  }
+  .hero-tagline {
+    font-size: 1rem; line-height: 1.8; color: var(--ink-dim);
+    max-width: 500px; margin: 0 auto;
+  }
+  .hero-tagline em {
+    font-style: normal; color: var(--accent); position: relative;
+  }
+  .hero-meta-row {
+    display: flex; justify-content: center; gap: 3rem;
+    margin-top: 2.5rem;
+  }
+  .hero-meta-item { text-align: center; }
+  .hero-meta-item .num { font-size: 1.8rem; font-weight: 900; color: var(--ink); }
+  .hero-meta-item .lbl { font-size: 0.6rem; letter-spacing: 0.15em; color: var(--ink-muted); text-transform: uppercase; margin-top: 0.2rem; }
+
+  /* Scroll hint */
+  .scroll-hint {
+    text-align: center; margin-top: 4rem;
+    font-size: 0.6rem; letter-spacing: 0.2em; color: var(--ink-muted);
+    animation: fadeInOut 3s ease-in-out infinite;
+  }
+  @keyframes fadeInOut {
+    0%,100%{opacity:0.3} 50%{opacity:1}
+  }
+
+  /* ── About ── */
+  .about-flow { font-size: 1.05rem; line-height: 2; color: var(--ink-dim); }
+  .about-flow strong { color: var(--ink); font-weight: 700; }
+  .about-flow .mark {
+    background: var(--accent-dim); color: var(--accent);
+    padding: 0.1em 0.3em; font-weight: 700;
+  }
+
+  /* Lang haiku cards */
+  .lang-haiku-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem;
+    margin-top: 3rem;
+  }
+  .lang-haiku {
+    text-align: center; padding: 1.5rem 0.8rem;
+    border: 1px solid transparent;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .lang-haiku:hover { border-color: var(--border); background: #fff; }
+  .lang-haiku .lang-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+  .lang-haiku .lang-name { font-weight: 700; font-size: 0.9rem; color: var(--ink); }
+  .lang-haiku .lang-desc { font-size: 0.65rem; color: var(--ink-muted); margin-top: 0.2rem; }
+
+  /* Catchphrase */
+  .koan-block {
+    margin-top: 3rem; padding: 3rem 2rem;
+    text-align: center;
+    background: var(--accent-dim);
+    position: relative;
+  }
+  .koan-block .koan { font-size: 2rem; font-weight: 900; color: var(--accent); }
+  .koan-block .koan-sub { font-size: 0.8rem; color: var(--ink-dim); margin-top: 0.5rem; }
+
+  /* ── Education ── */
+  .edu-list { max-width: 600px; margin: 0 auto; }
+  .edu-item {
+    display: flex; gap: 2rem; align-items: baseline;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .edu-item .edu-date { font-size: 0.7rem; letter-spacing: 0.1em; color: var(--ink-muted); min-width: 120px; }
+  .edu-item .edu-name { font-weight: 700; font-size: 1rem; color: var(--ink); }
+  .edu-item .edu-desc { font-size: 0.78rem; color: var(--ink-dim); display: block; }
+  .edu-item.current { position: relative; }
+  .edu-item.current::before {
+    content: ''; position: absolute; left: -1rem; top: 50%; transform: translateY(-50%);
+    width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+  }
+
+  /* ── Project ── */
+  .project-zen {
+    background: #fff; border: 1px solid var(--border);
+    padding: 3rem; text-align: center; box-shadow: var(--shadow);
+  }
+  .project-zen .proj-tag {
+    display: inline-block; font-size: 0.55rem; letter-spacing: 0.25em;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .project-zen h3 { font-size: 1.6rem; font-weight: 900; color: var(--ink); margin-bottom: 0.8rem; }
+  .project-zen p { color: var(--ink-dim); max-width: 500px; margin: 0 auto 1.5rem; line-height: 1.7; font-size: 0.9rem; }
+  .tech-zen { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+  .tech-zen span {
+    font-size: 0.65rem; letter-spacing: 0.08em;
+    color: var(--ink-dim); border: 1px solid var(--border); padding: 0.3em 0.8em;
+  }
+  .project-zen .proj-link {
+    display: inline-block; margin-top: 1.5rem;
+    font-size: 0.8rem; color: var(--accent); text-decoration: none; font-weight: 700;
+    transition: opacity 0.2s;
+  }
+  .project-zen .proj-link:hover { opacity: 0.6; }
+
+  /* ── Awards ── */
+  .award-featured-zen {
+    text-align: center; padding: 2.5rem;
+    border: 1px solid var(--border); background: #fff;
+    margin-bottom: 1.5rem; box-shadow: var(--shadow);
+  }
+  .award-featured-zen .aw-medal { font-size: 3rem; }
+  .award-featured-zen .aw-title { font-size: 1.3rem; font-weight: 900; color: var(--ink); line-height: 1.4; margin-top: 0.8rem; }
+  .award-featured-zen .aw-grade { display: inline-block; font-size: 0.7rem; letter-spacing: 0.15em; color: var(--accent); margin-top: 0.5rem; font-weight: 700; }
+  .award-minimal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+  .aw-mini {
+    padding: 1rem 1.2rem; border: 1px solid var(--border); background: #fff;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: border-color 0.3s;
+  }
+  .aw-mini:hover { border-color: var(--ink-muted); }
+  .aw-mini .awn { font-size: 0.82rem; font-weight: 700; color: var(--ink); }
+  .aw-mini .awm { text-align: right; }
+  .aw-mini .awm .grd { font-size: 0.65rem; color: var(--accent); font-weight: 700; }
+  .aw-mini .awm .yr { font-size: 0.6rem; color: var(--ink-muted); }
+
+  /* ── Photography ── */
+  .photo-zen-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; }
+  .photo-zen-item {
+    aspect-ratio: 1; overflow: hidden; cursor: pointer;
+    position: relative;
+  }
+  .photo-zen-item img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    filter: grayscale(40%);
+    transition: filter 0.5s, transform 0.6s;
+  }
+  .photo-zen-item:hover img { filter: grayscale(0%); transform: scale(1.06); }
+  /* Some variant spans */
+  .photo-zen-item:nth-child(3n) { grid-column: span 2; grid-row: span 2; }
+  .photo-zen-item:nth-child(7) { grid-column: span 2; }
+  .photo-zen-item:nth-child(10) { grid-column: span 2; }
+
+  /* ── Contact ── */
+  .contact-zen { text-align: center; }
+  .contact-zen .cz-item { margin-bottom: 1rem; }
+  .contact-zen .cz-label { font-size: 0.6rem; letter-spacing: 0.2em; color: var(--ink-muted); text-transform: uppercase; }
+  .contact-zen .cz-val { font-size: 1rem; color: var(--ink); font-weight: 700; margin-top: 0.2rem; }
+  .contact-zen .cz-val a { color: inherit; text-decoration: none; transition: color 0.2s; }
+  .contact-zen .cz-val a:hover { color: var(--accent); }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center; padding: 4rem 2rem;
+    border-top: 1px solid var(--border);
+  }
+  footer .fq { font-size: 1.8rem; font-weight: 900; color: var(--ink); }
+  footer .fm { font-size: 0.65rem; color: var(--ink-muted); margin-top: 0.8rem; }
+
+  /* ── Reveal ── */
+  .reveal { opacity: 0; transform: translateY(25px); transition: 0.8s ease-out; }
+  .reveal.on { opacity: 1; transform: translateY(0); }
+
+  /* ── Lightbox ── */
+  .lb { position: fixed; inset: 0; z-index: 1000; background: rgba(250,250,248,0.96); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; cursor: pointer; }
+  .lb.on { opacity: 1; pointer-events: auto; }
+  .lb img { max-width: 90vw; max-height: 90vh; object-fit: contain; box-shadow: 0 4px 24px rgba(0,0,0,0.08); border-radius: 2px; }
+  .lb .x { position: absolute; top: 1.5rem; right: 1.5rem; font-size: 2rem; cursor: pointer; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: var(--ink-dim); border: 1px solid var(--border); border-radius: 50%; }
+
+  @media (max-width: 768px) {
+    .hero-meta-row { gap: 1.5rem; }
+    .lang-haiku-grid { grid-template-columns: repeat(2, 1fr); }
+    .award-minimal-grid { grid-template-columns: 1fr; }
+    .photo-zen-grid { grid-template-columns: repeat(3, 1fr); }
+    .photo-zen-item:nth-child(3n) { grid-column: span 2; grid-row: span 1; }
+    .edu-item { flex-direction: column; gap: 0.3rem; }
+    .project-zen { padding: 1.5rem; }
+    header nav { gap: 0.8rem; }
+    header nav a { font-size: 0.65rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">黎</div>
+  <nav>
+    <a href="#about">关于</a>
+    <a href="#project">项目</a>
+    <a href="#awards">奖项</a>
+    <a href="#photo">摄影</a>
+    <a href="#contact">联络</a>
+  </nav>
+</header>
+
+<!-- ════════ HERO ════════ -->
+<section class="hero" id="top">
+  <div class="container hero-inner">
+    <div class="hero-photo-circle">
+      <img src="photo/myself/p1.jpg" alt="黎子謙">
+    </div>
+    <h1 class="hero-name">黎子謙</h1>
+    <p class="hero-en">LAI CHI HIM</p>
+    <p class="hero-tagline">
+      一个小小星球上的在读学生 / <em>AI时代下的新青年</em><br>
+      是一个行动小矮子和<em>思想的胖子</em>
+    </p>
+    <div class="hero-meta-row">
+      <div class="hero-meta-item"><div class="num">18</div><div class="lbl">年华</div></div>
+      <div class="hero-meta-item"><div class="num">4</div><div class="lbl">语言</div></div>
+      <div class="hero-meta-item"><div class="num">20+</div><div class="lbl">奖项</div></div>
+    </div>
+    <div class="scroll-hint">—— 向下滚动 ——</div>
+  </div>
+</section>
+
+<div class="zen-divider">· · ·</div>
+
+<!-- ════════ ABOUT ════════ -->
+<section id="about">
+  <div class="container">
+    <p class="section-num">壱</p>
+    <h2 class="section-title">关于</h2>
+    <div class="about-flow reveal">
+      <p><strong>华中科技大学</strong>，自动化专业，大一。</p>
+      <p>一名初级的 <span class="mark">vibe coder</span>——在代码与机械的交界处寻找创造的乐趣。</p>
+      <p style="margin-top:1.5rem;">加入 <span class="mark">HRT 团队</span>后，第一个寒假便与队友完成了基于 MoveIt 的六轴机械手臂抓取项目。代码变成物理世界中的精准运动——这是我最着迷的时刻。</p>
+      <p style="margin-top:1.5rem;">来自<span class="mark">澳门</span>。在多元文化的碰撞中长大。粤语是母语，普通话、英语、日语是与世界对话的桥梁。</p>
+    </div>
+
+    <div class="lang-haiku-grid reveal">
+      <div class="lang-haiku"><div class="lang-icon">🗣️</div><div class="lang-name">粵語</div><div class="lang-desc">母語 · Native</div></div>
+      <div class="lang-haiku"><div class="lang-icon">📖</div><div class="lang-name">普通話</div><div class="lang-desc">流利 · Fluent</div></div>
+      <div class="lang-haiku"><div class="lang-icon">🌐</div><div class="lang-name">English</div><div class="lang-desc">Fluent</div></div>
+      <div class="lang-haiku"><div class="lang-icon">🎌</div><div class="lang-name">日本語</div><div class="lang-desc">学習中 · Learning</div></div>
+      <div class="lang-haiku"><div class="lang-icon">🐍</div><div class="lang-name">Python</div><div class="lang-desc">プログラミング</div></div>
+      <div class="lang-haiku"><div class="lang-icon">⚙️</div><div class="lang-name">C / C++</div><div class="lang-desc">プログラミング</div></div>
+    </div>
+
+    <div class="koan-block reveal">
+      <div class="koan">「想下先」</div>
+      <div class="koan-sub">三思而后行。行动之前，先让思想飞一会儿。</div>
+    </div>
+  </div>
+</section>
+
+<div class="zen-divider">· · ·</div>
+
+<!-- ════════ EDUCATION ════════ -->
+<section>
+  <div class="container">
+    <p class="section-num">弐</p>
+    <h2 class="section-title">学历</h2>
+    <div class="edu-list reveal">
+      <div class="edu-item current">
+        <span class="edu-date">2025 → Now</span>
+        <div><span class="edu-name">华中科技大学</span><span class="edu-desc">自动化专业 · 大一</span></div>
+      </div>
+      <div class="edu-item">
+        <span class="edu-date">2022 — 2025</span>
+        <div><span class="edu-name">澳門浸信中學</span><span class="edu-desc">高中 · Senior Secondary</span></div>
+      </div>
+      <div class="edu-item">
+        <span class="edu-date">2019 — 2022</span>
+        <div><span class="edu-name">澳門浸信中學</span><span class="edu-desc">初中 · Junior Secondary</span></div>
+      </div>
+      <div class="edu-item">
+        <span class="edu-date">2013 — 2019</span>
+        <div><span class="edu-name">澳門浸信中學</span><span class="edu-desc">小学 · Primary</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="zen-divider">· · ·</div>
+
+<!-- ════════ PROJECT ════════ -->
+<section id="project">
+  <div class="container">
+    <p class="section-num">参</p>
+    <h2 class="section-title">项目</h2>
+    <div class="project-zen reveal">
+      <span class="proj-tag">HRT · Robotics</span>
+      <h3>Six-Joint-Bot</h3>
+      <p>6-DOF robotic arm powered by ROS 2 & MoveIt 2，搭载自定义串行舵机硬件接口。从仿真到实物抓取，寒假期间与 HRT 队友协作完成。</p>
+      <div class="tech-zen">
+        <span>ROS 2</span><span>MoveIt 2</span><span>Python</span><span>C++</span><span>6-DOF</span><span>Serial Servo</span>
+      </div>
+      <a class="proj-link" href="https://github.com/7db0263a-code/six-joint-bot" target="_blank" rel="noopener">GitHub →</a>
+    </div>
+  </div>
+</section>
+
+<div class="zen-divider">· · ·</div>
+
+<!-- ════════ AWARDS ════════ -->
+<section id="awards">
+  <div class="container">
+    <p class="section-num">肆</p>
+    <h2 class="section-title">奖项</h2>
+    <div class="award-featured-zen reveal">
+      <div class="aw-medal">🏆</div>
+      <div class="aw-title">ICC全球發明大會中國區全國總決賽</div>
+      <div class="aw-grade">二等獎 · Second Prize · 2024</div>
+    </div>
+    <div class="reveal" style="text-align:center;margin-bottom:1.5rem; max-width:400px;margin-left:auto;margin-right:auto;">
+      <div style="border:1px solid var(--border);overflow:hidden;">
+        <img src="photo/myself/p3.jpg" alt="ICC Award" style="width:100%;display:block;">
+      </div>
+    </div>
+    <div class="award-minimal-grid reveal">
+      <div class="aw-mini"><span class="awn">上海國際發明創新展覽會</span><div class="awm"><div class="grd">金獎</div><div class="yr">2022</div></div></div>
+      <div class="aw-mini"><span class="awn">海峽兩岸青少年數學邀請賽(港澳)</span><div class="awm"><div class="grd">一等獎</div><div class="yr">2024</div></div></div>
+      <div class="aw-mini"><span class="awn">粵港澳大灣區數學競賽選拔賽</span><div class="awm"><div class="grd">一等獎</div><div class="yr">2024</div></div></div>
+      <div class="aw-mini"><span class="awn">澳門金蓮花杯國際數學邀請賽</span><div class="awm"><div class="grd">銀獎</div><div class="yr">2023</div></div></div>
+      <div class="aw-mini"><span class="awn">大灣區青少年資訊學創新大賽</span><div class="awm"><div class="grd">二等獎</div><div class="yr">2023</div></div></div>
+      <div class="aw-mini"><span class="awn">港澳數學奧林匹克公開賽</span><div class="awm"><div class="grd">銅獎</div><div class="yr">2024</div></div></div>
+      <div class="aw-mini"><span class="awn">澳門應用物理比賽</span><div class="awm"><div class="grd">三等獎</div><div class="yr">2024</div></div></div>
+      <div class="aw-mini"><span class="awn">深港澳人工智慧大賽</span><div class="awm"><div class="grd">三等獎</div><div class="yr">2020</div></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="zen-divider">· · ·</div>
+
+<!-- ════════ PHOTOGRAPHY ════════ -->
+<section id="photo">
+  <div class="container">
+    <p class="section-num">伍</p>
+    <h2 class="section-title">摄影</h2>
+    <p style="color:var(--ink-dim);margin-bottom:2rem;font-size:0.9rem;">镜头下的世界碎片 · 每个瞬间都是一首俳句</p>
+    <div class="photo-zen-grid reveal" id="gallery4"></div>
+  </div>
+</section>
+
+<div class="zen-divider">· · ·</div>
+
+<!-- ════════ CONTACT ════════ -->
+<section id="contact">
+  <div class="container">
+    <p class="section-num">陸</p>
+    <h2 class="section-title">联络</h2>
+    <div class="contact-zen reveal">
+      <div class="cz-item"><div class="cz-label">Email</div><div class="cz-val"><a href="mailto:7db0263a@gmail.com">7db0263a@gmail.com</a></div></div>
+      <div class="cz-item"><div class="cz-label">QQ</div><div class="cz-val"><a href="mailto:3572255042@qq.com">3572255042@qq.com</a></div></div>
+      <div class="cz-item"><div class="cz-label">GitHub</div><div class="cz-val"><a href="https://github.com/7db0263a-code" target="_blank">7db0263a-code</a></div></div>
+      <div class="cz-item"><div class="cz-label">所在</div><div class="cz-val">澳门 / 武汉</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="fq">「想下先。」</div>
+  <div class="fm">© 2026 黎子謙 LAI CHI HIM · 静水流深</div>
+</footer>
+
+<div class="lb" id="lb4"><div class="x">×</div><img src="" id="lbImg4"></div>
+
+<script>
+const ob = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('on'); }), {threshold:0.15});
+document.querySelectorAll('.reveal').forEach(el => ob.observe(el));
+
+const files = [
+  '微信图片_20260601231553_146_2.jpg','微信图片_20260601231556_147_2.jpg','微信图片_20260601231601_149_2.jpg',
+  '微信图片_20260601231603_150_2.jpg','微信图片_20260601231607_152_2.jpg','微信图片_20260601231609_153_2.jpg',
+  '微信图片_20260601231612_154_2.jpg','微信图片_20260601231613_155_2.jpg','微信图片_20260601231615_156_2.jpg',
+  '微信图片_20260601231616_157_2.jpg','微信图片_20260601231620_158_2.jpg','微信图片_20260601231624_159_2.jpg',
+  '微信图片_20260601231628_160_2.jpg','微信图片_20260601231630_161_2.jpg','微信图片_20260601231644_164_2.jpg'
+];
+const g = document.getElementById('gallery4');
+files.forEach((f,i) => {
+  const d = document.createElement('div'); d.className = 'photo-zen-item';
+  d.innerHTML = `<img src="photo/shot/${f}" alt="Photo" loading="lazy">`;
+  d.onclick = () => { document.getElementById('lbImg4').src = `photo/shot/${f}`; document.getElementById('lb4').classList.add('on'); document.body.style.overflow='hidden'; };
+  g.appendChild(d);
+});
+const lb = document.getElementById('lb4');
+lb.onclick = e => { if(e.target===lb||e.target.classList.contains('x')){ lb.classList.remove('on'); document.body.style.overflow=''; } };
+document.onkeydown = e => { if(e.key==='Escape'){ lb.classList.remove('on'); document.body.style.overflow=''; } };
+
+document.querySelectorAll('a[href^="#"]').forEach(a => a.onclick = e => {
+  e.preventDefault(); const t = document.querySelector(a.getAttribute('href'));
+  if(t) t.scrollIntoView({behavior:'smooth'});
+});
+</script>
+</body>
+</html>
